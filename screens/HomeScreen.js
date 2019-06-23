@@ -1,198 +1,139 @@
-import * as WebBrowser from 'expo-web-browser';
 import React from 'react';
 import {
-  Image,
-  Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  FlatList,
 } from 'react-native';
+import * as firebase from 'firebase';
 
-import { MonoText } from '../components/StyledText';
+export default class HomeScreen extends React.Component {
+  static navigationOptions = {
+    header: null,
+  };
 
-export default function HomeScreen() {
-  return (
-    <View style={styles.container}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}>
-        <View style={styles.welcomeContainer}>
-          <Image
-            source={
-              __DEV__
-                ? require('../assets/images/robot-dev.png')
-                : require('../assets/images/robot-prod.png')
-            }
-            style={styles.welcomeImage}
-          />
-        </View>
+  state = {
+    items: [],
+  }
 
-        <View style={styles.getStartedContainer}>
-          <DevelopmentModeNotice />
+  componentWillMount() {
+    firebase.database().ref(`Chats/`).on('value', (snap) => {
+      var items = [];
+      snap.forEach((child) => {
+        items.push({
+          id: child.key,
+          Name: child.val().Name,
+          Code: child.val().Code,
+          Semester: child.val().Semester,
+          key: child.key,
+        });
 
-          <Text style={styles.getStartedText}>Get started by opening</Text>
+        console.log("Items: " + JSON.stringify(items));
 
-          <View
-            style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
-            <MonoText>screens/HomeScreen.js</MonoText>
-          </View>
+      });
 
-          <Text style={styles.getStartedText}>
-            Change this text and your app will automatically reload.
-          </Text>
-        </View>
+      this.setState({ items: items });
+      console.log("Done Setting Items");
+      return items;
+    });
+  }
 
-        <View style={styles.helpContainer}>
-          <TouchableOpacity onPress={handleHelpPress} style={styles.helpLink}>
-            <Text style={styles.helpLinkText}>
-              Help, it didn’t automatically reload!
+  render() {
+    const { navigate } = this.props.navigation;
+
+    const CustomRow = ({ Name, Code, Semester, id }) => (
+      <TouchableOpacity onPress={() => navigate('Chat',
+        {
+          Name: Name,
+          Code: Code,
+          Semester: Semester,
+          id: id,
+        })}>
+        <View style={styles.container}>
+          <View style={styles.container_text}>
+            <Text style={styles.title}>
+              {Name}
             </Text>
-          </TouchableOpacity>
+            <Text style={styles.description}>
+              {Semester}
+            </Text>
+          </View>
         </View>
-      </ScrollView>
+      </TouchableOpacity>
+    );
 
-      <View style={styles.tabBarInfoContainer}>
-        <Text style={styles.tabBarInfoText}>
-          This is a tab bar. You can edit it in:
-        </Text>
-
-        <View
-          style={[styles.codeHighlightContainer, styles.navigationFilename]}>
-          <MonoText style={styles.codeHighlightText}>
-            navigation/MainTabNavigator.js
-          </MonoText>
-        </View>
+    const CustomListview = ({ itemList }) => (
+      <View style={styles.listContainer}>
+        <FlatList
+          data={itemList}
+          renderItem={({ item }) => <CustomRow
+            Name={item.Name}
+            Code={item.Code}
+            Semester={item.Semester}
+            id={item.id}
+            key={item.key}
+          />}
+        />
       </View>
-    </View>
-  );
-}
-
-HomeScreen.navigationOptions = {
-  header: null,
-};
-
-function DevelopmentModeNotice() {
-  if (__DEV__) {
-    const learnMoreButton = (
-      <Text onPress={handleLearnMorePress} style={styles.helpLinkText}>
-        Learn more
-      </Text>
     );
 
     return (
-      <Text style={styles.developmentModeText}>
-        Development mode is enabled: your app will be slower but you can use
-        useful development tools. {learnMoreButton}
-      </Text>
-    );
-  } else {
-    return (
-      <Text style={styles.developmentModeText}>
-        You are not in development mode: your app will run at full speed.
-      </Text>
+      <View style={styles.contianer_parent}>
+        <CustomListview itemList={this.state.items} />
+      </View>
     );
   }
 }
 
-function handleLearnMorePress() {
-  WebBrowser.openBrowserAsync(
-    'https://docs.expo.io/versions/latest/workflow/development-mode/'
-  );
-}
-
-function handleHelpPress() {
-  WebBrowser.openBrowserAsync(
-    'https://docs.expo.io/versions/latest/workflow/up-and-running/#cant-see-your-changes'
-  );
-}
-
 const styles = StyleSheet.create({
+  contianer_parent: {
+    flex: 1,
+    backgroundColor: '#FCFCFC',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    flexDirection: 'row',
+    padding: 10,
+    marginLeft: 16,
+    marginRight: 16,
+    marginTop: 8,
+    marginBottom: 8,
+    borderRadius: 5,
+    backgroundColor: '#FFF',
+    elevation: 2,
   },
-  developmentModeText: {
-    marginBottom: 20,
-    color: 'rgba(0,0,0,0.4)',
-    fontSize: 14,
-    lineHeight: 19,
+  welcome: {
+    fontSize: 40,
     textAlign: 'center',
+    margin: 10,
+    marginBottom: 90,
+    color: '#404042'
   },
-  contentContainer: {
-    paddingTop: 30,
-  },
-  welcomeContainer: {
-    alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  welcomeImage: {
-    width: 100,
-    height: 80,
-    resizeMode: 'contain',
-    marginTop: 3,
-    marginLeft: -10,
-  },
-  getStartedContainer: {
-    alignItems: 'center',
-    marginHorizontal: 50,
-  },
-  homeScreenFilename: {
-    marginVertical: 7,
-  },
-  codeHighlightText: {
-    color: 'rgba(96,100,109, 0.8)',
-  },
-  codeHighlightContainer: {
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 3,
-    paddingHorizontal: 4,
-  },
-  getStartedText: {
-    fontSize: 17,
-    color: 'rgba(96,100,109, 1)',
-    lineHeight: 24,
+  instructions: {
     textAlign: 'center',
+    color: '#333333',
+    marginBottom: 5,
   },
-  tabBarInfoContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    ...Platform.select({
-      ios: {
-        shadowColor: 'black',
-        shadowOffset: { width: 0, height: -3 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 20,
-      },
-    }),
-    alignItems: 'center',
-    backgroundColor: '#fbfbfb',
-    paddingVertical: 20,
+  title: {
+    fontSize: 16,
+    color: '#000',
   },
-  tabBarInfoText: {
-    fontSize: 17,
-    color: 'rgba(96,100,109, 1)',
-    textAlign: 'center',
+  container_text: {
+    flex: 1,
+    flexDirection: 'column',
+    marginLeft: 12,
+    justifyContent: 'center',
   },
-  navigationFilename: {
-    marginTop: 5,
+  description: {
+    fontSize: 11,
+    fontStyle: 'italic',
   },
-  helpContainer: {
-    marginTop: 15,
-    alignItems: 'center',
+  photo: {
+    height: 50,
+    width: 50,
   },
-  helpLink: {
-    paddingVertical: 15,
-  },
-  helpLinkText: {
-    fontSize: 14,
-    color: '#2e78b7',
+  listContainer: {
+    flex: 1,
   },
 });

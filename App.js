@@ -6,6 +6,19 @@ import { Platform, StatusBar, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import AppNavigator from './navigation/AppNavigator';
+import * as firebase from 'firebase';
+
+var firebaseConfig = {
+  apiKey: "AIzaSyBM51R6TYwdQJIN8b8ZP8u6piEVFJpbUaY",
+  authDomain: "mulapp-b980f.firebaseapp.com",
+  databaseURL: "https://mulapp-b980f.firebaseio.com",
+  projectId: "mulapp-b980f",
+  storageBucket: "mulapp-b980f.appspot.com",
+  messagingSenderId: "871160821632",
+  appId: "1:871160821632:web:94a491672c22dba0"
+};
+
+firebase.initializeApp(firebaseConfig);
 
 export default function App(props) {
   const [isLoadingComplete, setLoadingComplete] = useState(false);
