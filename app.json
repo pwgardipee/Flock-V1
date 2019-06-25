@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Flock_V1",
-    "slug": "Flock_V1",
+    "name": "Flock",
+    "slug": "Flock",
     "privacy": "public",
     "sdkVersion": "33.0.0",
     "platforms": [
